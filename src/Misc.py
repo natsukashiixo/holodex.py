@@ -3,7 +3,7 @@ from operator import attrgetter
 class PlaceholderCredits:
 
     @staticmethod
-    def from_data(data):
+    def from_data(data: dict):
         if not data: return
         for k, v in data.items():
             name = v.get("name")
@@ -42,7 +42,7 @@ class Comment:
 
 class Org:
 
-    def __init__(self, client, name):
+    def __init__(self, client: HolodexClient, name: str):
         self.client = client
         self.name = name
 
@@ -72,10 +72,10 @@ class Org:
 class Topic:
 
     @staticmethod
-    def from_str(client, name):
+    def from_str(client: HolodexClient, name: str):
         return Topic(client, {"id": name})
 
-    def __init__(self, client, data):
+    def __init__(self, client: HolodexClient, data: dict):
         self.client = client
         self.id: str = data["id"]
         self.count: int = data.get("count", None)
