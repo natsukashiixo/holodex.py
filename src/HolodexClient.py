@@ -1,3 +1,10 @@
+import aiohttp
+from . import BASE_URL, API_URL
+from .ChannelObjects import Vtuber, Clipper
+from .VideoObjects import BaseVideo
+from .Misc import PlaceholderCredits, Topic, Org
+import utils as hdutils
+
 class HolodexClient:
 
     def __init__(self, api_key: str = None, jwt: str = None, cls=None, cache: dict = None):
@@ -33,10 +40,10 @@ class HolodexClient:
     async def request(self, method, endpoint, base=True, **kwargs):
         body = kwargs.pop("body", None)
         params = kwargs.pop("params", None)
-        url = kwargs.pop("url", None) or fix_url(endpoint)
+        url = kwargs.pop("url", None) or hdutils.fix_url(endpoint)
         if base:
             url = BASE_URL + url
-        async with self.session.request(method, url, json=body, params=filter_params(params)) as r:
+        async with self.session.request(method, url, json=body, params=hdutils.filter_params(params)) as r:
             await r.read()
         return r
 
@@ -45,19 +52,19 @@ class HolodexClient:
             url = BASE_URL + url
         async with self.session.get(url) as r:
             await r.read()
-        return await parse_type(r) if raw else r
+        return await hdutils.parse_type(r) if raw else r
 
     async def get(self, endpoint, body: dict = None, params: dict = None, raw=False):
         ret = await self.request("GET", endpoint, body=body, params=params)
-        return await parse_type(ret) if raw else ret
+        return await hdutils.parse_type(ret) if raw else ret
 
     async def post(self, endpoint, body: dict = None, params: dict = None, raw=False):
         ret = await self.request("POST", endpoint, body=body, params=params)
-        return await parse_type(ret) if raw else ret
+        return await hdutils.parse_type(ret) if raw else ret
 
     async def delete(self, endpoint, body: dict = None, params: dict = None, raw=False):
         ret = await self.request("DELETE", endpoint, body=body, params=params)
-        return await parse_type(ret) if raw else ret
+        return await hdutils.parse_type(ret) if raw else ret
 
     @property
     def vtubers(self):
@@ -110,7 +117,7 @@ class HolodexClient:
         return self.get_channel(data["id"]) or self.raw_channel(data)
 
     def get_channel(self, id: str):
-        return get(self.channels, id=id)
+        return hdutils.get(self.channels, id=id)
 
     def find_channel(self, exact=False, **kwargs):
         j = self.find_channels(limit=1, exact=exact, **kwargs)
@@ -122,7 +129,7 @@ class HolodexClient:
         return self.find_channel(name=name)
 
     def get_org(self, name: str):
-        return get(self.orgs, name=name)
+        return hdutils.get(self.orgs, name=name)
 
     def insert_org(self, org):
         if not org:
@@ -133,12 +140,12 @@ class HolodexClient:
     def get_topic(self, name: str):
         if not name:
             return None
-        return find(lambda t: t.id.lower() == name.lower(), self.topics)
+        return hdutils.find(lambda t: t.id.lower() == name.lower(), self.topics)
 
     def gen_topic(self, name: str):
         if not name:
             return None
-        return find(lambda t: t.id.lower() == name.lower(), self.topics) or Topic.from_str(self, name)
+        return hdutils.find(lambda t: t.id.lower() == name.lower(), self.topics) or Topic.from_str(self, name)
 
     def insert_topic(self, topic):
         if not topic:
@@ -147,7 +154,7 @@ class HolodexClient:
             self._topics[topic.id] = topic
 
     def get_video(self, id: str):
-        return get(self.videos, id=id)
+        return hdutils.get(self.videos, id=id)
 
     def insert_video(self, video):
         if not video:
@@ -307,8 +314,8 @@ class HolodexClient:
             sort: str = None,
             status: ["new", "upcoming", "live", "past", "missing"] = None,
             topic: str = None,
-            after: datetime = None,
-            before: datetime = None,
+            after: hdutils.datetime = None,
+            before: hdutils.datetime = None,
             paginated: bool = False,
     ):
         params = {
@@ -452,7 +459,7 @@ class HolodexClient:
         link: str,
         thumbnail: str,
         duration: int,
-        start_time: datetime,
+        start_time: hdutils.datetime,
         credits: PlaceholderCredits,
         type: ["scheduled-yt-stream", "external-stream", "event"] = "scheduled-yt-stream",
         certainty: ["likely", "certain"] = "certain",
