@@ -4,6 +4,10 @@ Vtuber(BaseChannel)
 Clipper(BaseChannel)
 '''
 
+from .HolodexClient import HolodexClient
+from .Misc import Topic, Org
+import utils as hdutils
+
 class BaseChannel:
 
     @staticmethod
@@ -28,13 +32,13 @@ class BaseChannel:
         self.banner: str | None = data.get("banner")
         if self.banner and "=w" not in self.banner:
             self.banner += "=w10000"
-        self.view_count: int | None = parse_int(data.get("view_count"))
-        self.subscriber_count: int | None = parse_int(data.get("subscriber_count"))
-        self.video_count: int | None = parse_int(data.get("video_count"))
-        self.published_at: datetime | None = parse_time(data.get("published_at"))
-        self.updated_at: datetime | None = parse_time(data.get("updated_at"))
-        self.crawled_at: datetime | None = parse_time(data.get("crawled_at"))
-        self.created_at: datetime | None = parse_time(data.get("created_at"))
+        self.view_count: int | None = hdutils.parse_int(data.get("view_count"))
+        self.subscriber_count: int | None = hdutils.parse_int(data.get("subscriber_count"))
+        self.video_count: int | None = hdutils.parse_int(data.get("video_count"))
+        self.published_at: hdutils.datetime | None = hdutils.parse_time(data.get("published_at"))
+        self.updated_at: hdutils.datetime | None = hdutils.parse_time(data.get("updated_at"))
+        self.crawled_at: hdutils.datetime | None = hdutils.parse_time(data.get("crawled_at"))
+        self.created_at: hdutils.datetime | None = hdutils.parse_time(data.get("created_at"))
         self.yt_uploads_id: str | None = data.get("yt_uploads_id")
         self.twitter: str | None = data.get("twitter")
         if self.twitter:
@@ -72,7 +76,7 @@ class BaseChannel:
 
     @property
     def hyperlink(self):
-        return f'[{ed(str(self))}]({self.url})'
+        return f'[{str(self)}]({self.url})'
 
     @property
     def twitter_url(self):
@@ -83,7 +87,7 @@ class BaseChannel:
     @property
     def twitter_hyperlink(self):
         if self.twitter:
-            return f'[@{ed(self.twitter)}]({self.twitter_url})'
+            return f'[@{self.twitter}]({self.twitter_url})'
         return None
 
     @property
@@ -92,7 +96,7 @@ class BaseChannel:
 
     @property
     def yt_hyperlink(self):
-        return f'[{ed(self.name)}]({self.yt_url})'
+        return f'[{self.name}]({self.yt_url})'
 
     @property
     def handle(self):
@@ -107,7 +111,7 @@ class BaseChannel:
     @property
     def handle_hyperlink(self):
         if self.handle:
-            return f'[{ed(self.handle)}]({self.handle_url})'
+            return f'[{self.handle}]({self.handle_url})'
         return None
 
     # @handle.setter
@@ -127,7 +131,7 @@ class BaseChannel:
             return None
         if isinstance(style, str):
             style = [style]
-        return separator.join([fdt(timestamp, style=s) for s in style])
+        return separator.join([hdutils.fdt(timestamp, style=s) for s in style])
 
     def to_dict(self):
         return {
@@ -154,11 +158,11 @@ class Vtuber(BaseChannel):
         self.org: Org | None = data.get("org")
         self.suborg: str | None = data.get("suborg")
         self.group: str | None = data.get("group") or (data.get("suborg", "") or "")[2:]
-        self.clip_count: int | None = parse_int(data.get("clip_count"))
-        self.comments_crawled_at: datetime | None = parse_time(data.get("comments_crawled_at"))
+        self.clip_count: int | None = hdutils.parse_int(data.get("clip_count"))
+        self.comments_crawled_at: hdutils.datetime | None = hdutils.parse_time(data.get("comments_crawled_at"))
         self.top_topics: list = [Topic.from_str(client, t) for t in data.get("top_topics", []) or []]
         self.twitch: str | None = data.get("twitch")
-        self.twitter_id: int | None = parse_int(data.get("twitter_id"))
+        self.twitter_id: int | None = hdutils.parse_int(data.get("twitter_id"))
 
         self.transform()
 
@@ -185,7 +189,7 @@ class Vtuber(BaseChannel):
     @property
     def twitch_hyperlink(self):
         if self.twitch:
-            return f'[{ed(self.twitch)}]({self.twitch_url})'
+            return f'[{self.twitch}]({self.twitch_url})'
         return
 
     def convert_dict(self):
