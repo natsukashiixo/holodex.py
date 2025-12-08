@@ -1,4 +1,5 @@
 from operator import attrgetter
+from .HolodexClient import HolodexClient
 
 class PlaceholderCredits:
 
