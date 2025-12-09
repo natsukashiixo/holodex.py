@@ -1,5 +1,3 @@
-
-
 '''
 This file contains BaseVideo and its subclasses: 
 Streamable(BaseVideo) 
@@ -13,6 +11,12 @@ Clip holds info about sources and other clips of the same source.
 Stream holds info about live stream specific data like clips referencing the stream, song count, song list and more. 
 Placeholder holds info about potential future streams, external streams and other events. 
 '''
+from bs4 import BeautifulSoup
+import re
+from .HolodexClient import HolodexClient
+from .Misc import PlaceholderCredits, Comment
+from .ChannelObjects import Vtuber, Clipper, BaseChannel
+import utils as hdutils
 
 class BaseVideo:
 
@@ -42,13 +46,13 @@ class BaseVideo:
             raise ValueError("Invalid Video ID")
         self.title: str = data.get("title")
         self.type: ["stream", "clip", "placeholder"] = data.get("type")
-        self.published_at: datetime | None = parse_time(data.get("published_at"))
-        self.available_at: datetime = parse_time(data.get("available_at"))
-        self.duration: int = parse_int(data.get("duration"))
+        self.published_at: hdutils.datetime | None = hdutils.parse_time(data.get("published_at"))
+        self.available_at: hdutils.datetime = hdutils.parse_time(data.get("available_at"))
+        self.duration: int = hdutils.parse_int(data.get("duration"))
         self.status: ["new", "upcoming", "live", "past", "missing"] = data.get("status")
-        self.start_scheduled: datetime | None = parse_time(data.get("start_scheduled"))
-        self.start_actual: datetime | None = parse_time(data.get("start_actual"))
-        self.end_actual: datetime | None = parse_time(data.get("end_actual"))
+        self.start_scheduled: hdutils.datetime | None = hdutils.parse_time(data.get("start_scheduled"))
+        self.start_actual: hdutils.datetime | None = hdutils.parse_time(data.get("start_actual"))
+        self.end_actual: hdutils.datetime | None = hdutils.parse_time(data.get("end_actual"))
         self.description: str = data.get("description")
         self.channel_id: str = data.get("channel_id")
         self.recommendations: list[BaseVideo] = [BaseVideo.from_data(client, video) for video in data.get("recommendations", [])]
@@ -91,7 +95,7 @@ class BaseVideo:
 
     @property
     def hyperlink(self):
-        return f'[{ed(str(self))}]({self.url})'
+        return f'[{str(self)}]({self.url})'
 
     @property
     def yt_url(self):
@@ -99,7 +103,7 @@ class BaseVideo:
 
     @property
     def yt_hyperlink(self):
-        return f'[{ed(str(self))}]({self.yt_url})'
+        return f'[{str(self)}]({self.yt_url})'
 
     async def fetch_mentions(self):
         r = await self.client.fetch_video_mentions(self.id)
@@ -132,7 +136,7 @@ class BaseVideo:
         pattern = re.compile(r"var ytInitialPlayerResponse = (.*?);$", re.MULTILINE | re.DOTALL)
         var = pattern.search(k[0].text)
         raw = var.group(1)
-        final = loads(raw)
+        final = loads(raw) # this is pretty confusing?
         reason = final.get("playabilityStatus", {}).get("reason", "")
         return "get access to members-only content" in reason
 
@@ -168,9 +172,9 @@ class Stream(Streamable):
         super().__init__(client, data)
         self.clips: list[Clip] = [Clip(self.client, clip) for clip in data.get("clips", [])]
         self.simulcasts: list[Stream] = [Stream(self.client, simulcast) for simulcast in data.get("simulcasts", [])]
-        self.song_count: int = parse_int(data.get("song_count")) or parse_int(data.get("songcount"))
+        self.song_count: int = hdutils.parse_int(data.get("song_count")) or hdutils.parse_int(data.get("songcount"))
         self.songs: list = data.get("songs")
-        self.live_viewers: int | None = parse_int(data.get("live_viewers"))
+        self.live_viewers: int | None = hdutils.parse_int(data.get("live_viewers"))
         self.comments: list[Comment] = [Comment(comment) for comment in data.get("comments", [])]
         if not self.channel and data.get("channel"):
             self.channel = self.client.generate_channel(data["channel"])
@@ -217,7 +221,7 @@ class Placeholder(Streamable):
         link: str = None,
         thumbnail: str = None,
         duration: int = None,
-        start_time: datetime = None,
+        start_time: hdutils.datetime = None,
         credits: PlaceholderCredits = None,
         type: ["scheduled-yt-stream", "external-stream", "event"] = None,
         certainty: ["likely", "certain"] = None
