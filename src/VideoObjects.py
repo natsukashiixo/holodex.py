@@ -12,6 +12,7 @@ Stream holds info about live stream specific data like clips referencing the str
 Placeholder holds info about potential future streams, external streams and other events. 
 '''
 from bs4 import BeautifulSoup
+from json import loads
 import re
 from .HolodexClient import HolodexClient
 from .Misc import PlaceholderCredits, Comment
@@ -136,7 +137,7 @@ class BaseVideo:
         pattern = re.compile(r"var ytInitialPlayerResponse = (.*?);$", re.MULTILINE | re.DOTALL)
         var = pattern.search(k[0].text)
         raw = var.group(1)
-        final = loads(raw) # this is pretty confusing?
+        final = loads(raw)
         reason = final.get("playabilityStatus", {}).get("reason", "")
         return "get access to members-only content" in reason
 
