@@ -1,5 +1,6 @@
+from enum import Enum
 import aiohttp
-from . import BASE_URL, API_URL
+from . import BASE_URL
 from .ChannelObjects import Vtuber, Clipper
 from .VideoObjects import BaseVideo
 from .Misc import PlaceholderCredits, Topic, Org
@@ -245,7 +246,7 @@ class HolodexClient:
             self,
             channel_id: str = None,
             id: str = None,
-            include: list["clips", "refers", "sources", "simulcasts", "mentions", "description", "live_info", "channel_stats", "songs"] = None,
+            include: Enum["clips", "refers", "sources", "simulcasts", "mentions", "description", "live_info", "channel_stats", "songs"] = None,
             limit: int = 25,
             max_upcoming_hours: int = None,
             offset: int = 0,
@@ -302,7 +303,7 @@ class HolodexClient:
             self,
             channel_id: str = None,
             id: str = None,
-            include: list["clips", "refers", "sources", "simulcasts", "mentions", "description", "live_info", "channel_stats", "songs"] = None,
+            include: Enum["clips", "refers", "sources", "simulcasts", "mentions", "description", "live_info", "channel_stats", "songs"] = None,
             lang: str = None,
             limit: int = 25,
             max_upcoming_hours: int = None,
@@ -352,7 +353,7 @@ class HolodexClient:
         self,
         channel_id: str,
         video_type: ["clips", "videos", "collabs"],
-        include: list["clips", "refers", "sources", "simulcasts", "mentions", "description", "live_info", "channel_stats", "songs"] = None,
+        include: Enum["clips", "refers", "sources", "simulcasts", "mentions", "description", "live_info", "channel_stats", "songs"] = None,
         lang: str = None,
         limit: int = 25,
         offset: int = 0,

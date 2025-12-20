@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from operator import attrgetter
-
+from . import API_URL
 # py-cord utils
 
 def pt(timestamp):
